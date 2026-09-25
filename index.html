@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debrief: Does this need to be a meeting?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        oklch(10% 0.008 65);
+      --surface:   oklch(14% 0.008 65);
+      --surface-2: oklch(18% 0.007 65);
+      --border:    oklch(24% 0.006 65);
+      --accent:    oklch(78% 0.17 70);
+      --pass:      oklch(70% 0.13 145);
+      --fail:      oklch(64% 0.16 30);
+      --info:      oklch(68% 0.12 250);
+      --text:      oklch(96% 0.006 65);
+      --muted:     oklch(66% 0.01 65);
+      --font-display: "Geist", system-ui, sans-serif;
+      --font-body:    "Geist", system-ui, sans-serif;
+      --font-mono:    "Geist Mono", ui-monospace, monospace;
+      --max-w: 1200px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      padding: 8px 16px;
+      background: var(--accent);
+      color: oklch(12% 0.01 70);
+      font-weight: 600;
+      font-size: 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      z-index: 1000;
+    }
+    .skip-link:focus { top: 16px; }
+
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 clamp(16px, 4vw, 48px);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 16px 0;
+      border-bottom: 1px solid oklch(100% 0 0 / 0.06);
+      background: oklch(10% 0.008 65 / 0.85);   /* fallback for browsers without backdrop-filter */
+    }
+    @supports ((backdrop-filter: blur(24px)) or (-webkit-backdrop-filter: blur(24px))) {
+      nav {
+        background: oklch(10% 0.008 65 / 0.55);
+        -webkit-backdrop-filter: blur(24px) saturate(160%);
+        backdrop-filter: blur(24px) saturate(160%);
+      }
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-end {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      width: 44px;
+      height: 44px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+    }
+    .nav-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text);
+      border-radius: 1px;
+      transition: transform 0.2s;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+      border: none;
+      font-family: var(--font-body);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--accent);
+      color: oklch(12% 0.01 70);
+    }
+    .btn-primary:hover {
+      background: oklch(82% 0.17 70);
+      box-shadow: 0 0 28px oklch(78% 0.17 70 / 0.28);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: oklch(36% 0.01 65); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      padding: clamp(96px, 14vw, 180px) clamp(20px, 4vw, 48px) clamp(60px, 8vw, 96px);
+      max-width: 980px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .blob {
+      position: absolute;
+      width: 60vmax;
+      height: 60vmax;
+      border-radius: 50%;
+      filter: blur(52px);
+      will-change: transform;
+    }
+    .blob--a { background: var(--accent); opacity: 0.32; top: -22vmax; left: -10vmax; }
+    .blob--b { background: var(--pass);   opacity: 0.18; bottom: -28vmax; right: -10vmax; }
+    .blob--c { background: var(--info);   opacity: 0.13; top: 28%;  right: -22vmax; }
+    @media (prefers-reduced-motion: no-preference) {
+      .blob--a { animation: driftA 24s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate; }
+      .blob--b { animation: driftB 30s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate; }
+      .blob--c { animation: driftC 36s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate; }
+    }
+    @keyframes driftA { to { transform: translate(20vmax, 12vmax) scale(1.1); } }
+    @keyframes driftB { to { transform: translate(-18vmax, -10vmax) scale(1.15); } }
+    @keyframes driftC { to { transform: translate(-25vmax, 14vmax) scale(0.9); } }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      pointer-events: none;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+      mix-blend-mode: overlay;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding: 6px 14px;
+      border: 1px solid oklch(78% 0.17 70 / 0.3);
+      border-radius: 999px;
+      margin-bottom: 32px;
+    }
+
+    .hero-headline {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 9vw, 124px);
+      font-weight: 700;
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+      max-width: 900px;
+      margin: 0 auto 28px;
+    }
+    .hero-headline em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: clamp(17px, 1.8vw, 21px);
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 640px;
+      margin: 0 auto 40px;
+    }
+
+    .hero-form {
+      display: flex;
+      gap: 10px;
+      max-width: 480px;
+      margin: 0 auto 24px;
+    }
+    .hero-form input {
+      flex: 1;
+      min-width: 0;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: var(--font-body);
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color 0.2s;
+    }
+    .hero-form input::placeholder { color: oklch(58% 0.007 65); }
+    .hero-form input:focus { border-color: oklch(78% 0.17 70 / 0.5); }
+    .hero-form .btn { white-space: nowrap; padding: 14px 24px; font-size: 15px; border-radius: 10px; }
+
+    .form-error {
+      font-size: 13px;
+      color: var(--fail);
+      max-width: 480px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .form-success {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      color: var(--pass);
+      margin: 0 auto 24px;
+      padding: 12px 16px;
+      background: oklch(70% 0.13 145 / 0.08);
+      border: 1px solid oklch(70% 0.13 145 / 0.2);
+      border-radius: 10px;
+    }
+
+    .hero-trust {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── LOGOS BAND ── */
+    .logos {
+      position: relative;
+      z-index: 2;
+      padding: clamp(40px, 5vw, 64px) clamp(20px, 4vw, 48px);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .logos-label {
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+    .logos-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      overflow: hidden;
+      position: relative;
+      mask-image: linear-gradient(to right, transparent 0, oklch(0% 0 0) 8%, oklch(0% 0 0) 92%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0, oklch(0% 0 0) 8%, oklch(0% 0 0) 92%, transparent 100%);
+    }
+    .logos-track {
+      display: flex;
+      gap: 84px;
+      padding-right: 84px;
+      flex-shrink: 0;
+      width: max-content;
+    }
+    .logo-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: oklch(64% 0.008 65);
+      transition: color 0.25s ease;
+      flex-shrink: 0;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .logo-card:hover { color: oklch(78% 0.008 65); }
+    .logo-mark { flex-shrink: 0; display: inline-block; color: inherit; }
+    @media (prefers-reduced-motion: no-preference) {
+      .logos-track { animation: logos-marquee 40s linear infinite; }
+      .logos-row:hover .logos-track { animation-play-state: paused; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .logos-row {
+        overflow: visible;
+        mask-image: none;
+        -webkit-mask-image: none;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .logos-track {
+        flex-wrap: wrap;
+        justify-content: center;
+        width: auto;
+        padding: 0;
+        gap: clamp(28px, 5vw, 64px);
+      }
+      .logos-track > [aria-hidden="true"] { display: none; }
+    }
+    @keyframes logos-marquee {
+      from { transform: translate3d(0, 0, 0); }
+      to   { transform: translate3d(-50%, 0, 0); }
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how {
+      padding: clamp(80px, 10vw, 120px) 0;
+    }
+    .how-header {
+      max-width: 560px;
+      margin-bottom: clamp(48px, 6vw, 72px);
+    }
+    .how-title {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4.5vw, 56px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .how-steps {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-width: 880px;
+    }
+    .how-step {
+      display: grid;
+      grid-template-columns: minmax(120px, 180px) 1fr;
+      gap: clamp(24px, 4vw, 56px);
+      padding: clamp(36px, 5vw, 64px) 0;
+      align-items: start;
+    }
+    .how-step-num {
+      font-family: var(--font-display);
+      font-size: clamp(64px, 8vw, 112px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: transparent;
+      -webkit-text-stroke: 1px var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .how-step-title {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 2.8vw, 36px);
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .how-step-desc {
+      font-size: clamp(15px, 1.4vw, 18px);
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 540px;
+    }
+
+    /* ── SOCIAL PROOF ── */
+    .proof {
+      padding: clamp(80px, 10vw, 120px) 0;
+    }
+    .proof-title {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4.5vw, 56px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: clamp(48px, 6vw, 72px);
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(32px, 4vw, 56px);
+      margin-bottom: 56px;
+    }
+    .testimonial {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .testimonial[data-author="sk"] {
+      background: oklch(78% 0.17 70 / 0.18);
+      border-color: oklch(78% 0.17 70 / 0.20);
+    }
+    .testimonial[data-author="mt"] {
+      background: oklch(70% 0.13 145 / 0.18);
+      border-color: oklch(70% 0.13 145 / 0.20);
+    }
+    .testimonial[data-author="pn"] {
+      background: oklch(68% 0.12 250 / 0.18);
+      border-color: oklch(68% 0.12 250 / 0.20);
+    }
+    .testimonial-quote { display: none; }
+    .testimonial-text {
+      font-size: 15px;
+      line-height: 1.75;
+      color: oklch(72% 0.008 65);
+    }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid oklch(100% 0 0 / 0.08);
+    }
+    .author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .author-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .author-role { font-size: 12px; color: var(--muted); }
+
+    /* ── FAQ ── */
+    .faq {
+      padding: clamp(80px, 10vw, 120px) 0;
+    }
+    .faq-inner {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: clamp(40px, 6vw, 80px);
+      align-items: start;
+    }
+    .faq-title {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 4vw, 48px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      position: sticky;
+      top: 88px;
+    }
+
+    .faq-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .faq-item {
+      background: oklch(78% 0.17 70 / 0.08);
+      border: 1px solid oklch(78% 0.17 70 / 0.20);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: background 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s;
+    }
+    .faq-item:hover { background: oklch(78% 0.17 70 / 0.128); }
+    .faq-item.open {
+      background: oklch(78% 0.17 70 / 0.176);
+      border-color: oklch(78% 0.17 70 / 0.35);
+    }
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+      padding: 22px 24px;
+      background: none;
+      border: none;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: left;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    .faq-question:hover { color: var(--accent); }
+    .faq-icon {
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .faq-icon { transition: border-color 0.25s, color 0.25s, transform 0.25s; }
+    }
+    .faq-item.open .faq-icon {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: rotate(45deg);
+    }
+    .faq-answer {
+      display: grid;
+      grid-template-rows: 0fr;
+      visibility: hidden;
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.75;
+    }
+    .faq-answer-inner {
+      min-height: 0;
+      overflow: hidden;
+      padding: 0 24px 22px;
+    }
+    .faq-item.open .faq-answer {
+      grid-template-rows: 1fr;
+      visibility: visible;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .faq-answer { transition: grid-template-rows 0.3s ease, visibility 0s linear 0.3s; }
+      .faq-item.open .faq-answer { transition: grid-template-rows 0.3s ease, visibility 0s; }
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: clamp(48px, 6vw, 80px) 0 clamp(32px, 4vw, 48px);
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: clamp(32px, 4vw, 64px);
+      margin-bottom: 48px;
+    }
+    .footer-brand .nav-logo { display: block; margin-bottom: 12px; }
+    .footer-tagline {
+      font-size: 13px;
+      color: var(--muted);
+      max-width: 240px;
+      line-height: 1.65;
+      margin-bottom: 22px;
+    }
+    .social-links { display: flex; gap: 10px; }
+    .social-link {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .social-link:hover { border-color: var(--accent); color: var(--accent); }
+
+    .footer-col h3 {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--text); }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: oklch(58% 0.006 65);
+    }
+
+    /* ── ENTRANCE ANIMATION ── */
+    @media (prefers-reduced-motion: no-preference) {
+      .hero > * {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: heroIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+      .hero .section-label  { animation-delay: 0.05s; }
+      .hero .hero-headline  { animation-delay: 0.12s; }
+      .hero .hero-sub       { animation-delay: 0.26s; }
+      .hero .hero-form      { animation-delay: 0.36s; }
+      .hero .hero-trust     { animation-delay: 0.46s; }
+      .logos {
+        opacity: 0;
+        animation: heroIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.58s both;
+      }
+      @keyframes heroIn {
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+
+    /* ── SCROLL REVEALS ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      transition-delay: var(--reveal-delay, 0s);
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .how-steps .reveal:nth-child(2)    { --reveal-delay: 0.08s; }
+    .how-steps .reveal:nth-child(3)    { --reveal-delay: 0.16s; }
+    .testimonials .reveal:nth-child(2) { --reveal-delay: 0.1s; }
+    .testimonials .reveal:nth-child(3) { --reveal-delay: 0.2s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      .testimonials { grid-template-columns: 1fr; }
+      .faq-inner { grid-template-columns: 1fr; }
+      .faq-title { position: static; margin-bottom: 32px; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-toggle { display: flex; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        background: oklch(14% 0.008 65 / 0.92);
+        -webkit-backdrop-filter: blur(24px) saturate(150%);
+        backdrop-filter: blur(24px) saturate(150%);
+        border-bottom: 1px solid oklch(100% 0 0 / 0.06);
+        padding: 8px 0;
+        z-index: 10;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links li { width: 100%; }
+      .nav-links a {
+        display: block;
+        padding: 12px clamp(16px, 4vw, 48px);
+        font-size: 15px;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+      }
+      .nav-links .btn-ghost { color: var(--muted); }
+    }
+
+    @media (max-width: 600px) {
+      .how-step { grid-template-columns: 1fr; gap: 8px; padding: clamp(32px, 8vw, 48px) 0; }
+      .how-step-num { font-size: 56px; }
+      .footer-top { grid-template-columns: 1fr; }
+      .hero-form { flex-direction: column; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<div class="ambient" aria-hidden="true">
+  <div class="blob blob--a"></div>
+  <div class="blob blob--b"></div>
+  <div class="blob blob--c"></div>
+</div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">Debrief<span>.</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#" class="btn btn-ghost" style="padding:8px 16px;">Sign in</a></li>
+      </ul>
+      <div class="nav-end">
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navLinks">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <a href="#" class="btn btn-primary">Get started free</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<main id="main">
+<section class="hero">
+  <span class="section-label">Meeting intelligence</span>
+  <h1 class="hero-headline">Reclaim <em>10 hours</em> a week.</h1>
+  <p class="hero-sub">Debrief scores every meeting invite against the one question that matters: does this actually need to happen live? Most don't.</p>
+  <form class="hero-form" id="signupForm" novalidate>
+    <input type="email" placeholder="your@work.com" autocomplete="email" id="emailInput" aria-label="Work email address">
+    <button class="btn btn-primary" type="submit">Try free →</button>
+  </form>
+  <p class="hero-trust">Trusted by 4,200+ teams, no credit card required.</p>
+</section>
+
+<!-- LOGOS BAND -->
+<section class="logos">
+  <div class="logos-label">Teams using Debrief</div>
+  <div class="logos-row">
+    <div class="logos-track">
+      <span class="logo-card"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="5"/><path d="M9 4L11 6"/></svg>Loops</span>
+      <span class="logo-card"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M9 3L16 15L2 15Z"/></svg>Forma</span>
+      <span class="logo-card"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 11Q5 6 9 11T16 11"/></svg>Swell</span>
+      <span class="logo-card"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M9 3V15M9 7L13 9M9 10L13 12M9 7L5 9M9 10L5 12"/></svg>Harvest</span>
+      <span class="logo-card"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="9" r="2"/><circle cx="9" cy="9" r="5"/><circle cx="9" cy="9" r="8" stroke-opacity="0.4"/></svg>Ripple</span>
+      <!-- duplicated for seamless marquee loop; hidden from assistive tech -->
+      <span class="logo-card" aria-hidden="true"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9" cy="9" r="5"/><path d="M9 4L11 6"/></svg>Loops</span>
+      <span class="logo-card" aria-hidden="true"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9 3L16 15L2 15Z"/></svg>Forma</span>
+      <span class="logo-card" aria-hidden="true"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 11Q5 6 9 11T16 11"/></svg>Swell</span>
+      <span class="logo-card" aria-hidden="true"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 3V15M9 7L13 9M9 10L13 12M9 7L5 9M9 10L5 12"/></svg>Harvest</span>
+      <span class="logo-card" aria-hidden="true"><svg class="logo-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="2"/><circle cx="9" cy="9" r="5"/><circle cx="9" cy="9" r="8" stroke-opacity="0.4"/></svg>Ripple</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="how-header reveal">
+      <h2 class="how-title">Three steps.<br>No excuses.</h2>
+    </div>
+    <ol class="how-steps">
+      <li class="how-step reveal">
+        <div class="how-step-num">01</div>
+        <div>
+          <h3 class="how-step-title">Paste your agenda</h3>
+          <p class="how-step-desc">Drop in your meeting title, goal, and attendees, exactly what you'd put in the calendar invite.</p>
+        </div>
+      </li>
+      <li class="how-step reveal">
+        <div class="how-step-num">02</div>
+        <div>
+          <h3 class="how-step-title">Debrief scores it</h3>
+          <p class="how-step-desc">Our rubric checks for real decisions, required real-time collaboration, and whether async alternatives work.</p>
+        </div>
+      </li>
+      <li class="how-step reveal">
+        <div class="how-step-num">03</div>
+        <div>
+          <h3 class="how-step-title">Send or schedule</h3>
+          <p class="how-step-desc">Get a ready-to-send email draft, or confirm the meeting clears the bar and schedule it with confidence.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="proof">
+  <div class="container">
+    <h2 class="proof-title reveal">Your team<br>will thank you.</h2>
+
+    <div class="testimonials">
+      <div class="testimonial reveal" data-author="sk">
+        <p class="testimonial-text">We eliminated 60% of our recurring syncs in the first month. Debrief forced us to articulate what we actually needed, and usually the answer was a Loom and a Notion doc.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:oklch(14% 0.02 70);color:var(--accent);">SK</div>
+          <div>
+            <div class="author-name">Sarah K.</div>
+            <div class="author-role">Head of Product, Loops</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial reveal" data-author="mt">
+        <p class="testimonial-text">My eng team went from 14 hours a week in meetings to under 6. The difference isn't Debrief; it's the async-first culture it helped us build. The tool is just the nudge.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:oklch(13% 0.02 145);color:var(--pass);">MT</div>
+          <div>
+            <div class="author-name">Marcus T.</div>
+            <div class="author-role">Engineering Manager, Forma</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial reveal" data-author="pn">
+        <p class="testimonial-text">I use it before every meeting I schedule. It's honestly a little embarrassing how often I realize I just need to send a well-structured email. Ten minutes saved, not sixty.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:oklch(13% 0.02 250);color:var(--info);">PN</div>
+          <div>
+            <div class="author-name">Priya N.</div>
+            <div class="author-role">Chief of Staff, Swell</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="faq-inner">
+
+      <h2 class="faq-title">Questions<br>people<br>actually ask.</h2>
+
+      <ul class="faq-list">
+        <li class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-a1">
+            <span>Is Debrief free to use?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+
+          <div class="faq-answer" id="faq-a1"><div class="faq-answer-inner">Yes. The individual plan is free forever with unlimited analyses. Team features including Slack integration, shared rubrics, and org-wide meeting health dashboards start at $12/seat/month. No credit card required to start.</div></div>
+
+        </li>
+        <li class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-a2">
+            <span>Does it integrate with Google Calendar or Outlook?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer" id="faq-a2"><div class="faq-answer-inner">Yes. Debrief connects with Google Calendar and Outlook to surface a scoring nudge before you hit "Schedule." Slack and Notion integrations are in development and launching Q3 2025.</div></div>
+        </li>
+        <li class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-a3">
+            <span>What exactly does Debrief analyze?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer" id="faq-a3"><div class="faq-answer-inner">Paste in your agenda, goal, and attendees. Debrief evaluates three things: whether there's a clear decision requiring real-time input, whether the topic is time-sensitive, and whether an async alternative (email, doc, Loom) would work just as well.</div></div>
+        </li>
+        <li class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-a4">
+            <span>Is my meeting content private?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer" id="faq-a4"><div class="faq-answer-inner">Your content is never stored or used for model training. We process it in-memory and return a score. Enterprise plans support SSO and zero-data-retention agreements. See our privacy policy for the full picture.</div></div>
+        </li>
+        <li class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-a5">
+            <span>Can I roll this out across my whole team?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer" id="faq-a5"><div class="faq-answer-inner">Absolutely. Team plans include shared meeting rubrics so your whole org uses the same criteria, Slack nudges before meetings are scheduled, and a meeting health dashboard tracking which teams are improving. Most orgs see measurable change within three weeks.</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+
+      <div class="footer-brand">
+        <a href="#" class="nav-logo">Debrief<span>.</span></a>
+        <p class="footer-tagline">The question every calendar invite should ask. Stop scheduling. Start communicating.</p>
+        <div class="social-links">
+          <a href="#" class="social-link" aria-label="X">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" class="social-link" aria-label="LinkedIn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <a href="#" class="social-link" aria-label="Facebook">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <a href="#" class="social-link" aria-label="Instagram">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h3>Product</h3>
+        <ul>
+          <li><a href="#">How it works</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Integrations</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h3>Company</h3>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Security</a></li>
+          <li><a href="#">Cookies</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Debrief, Inc. All rights reserved.</span>
+      <span>Made for teams who respect each other's time.</span>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-question').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        q.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  // Hamburger nav
+  const navToggle = document.getElementById('navToggle');
+  const navLinks  = document.getElementById('navLinks');
+
+  navToggle.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', open);
+  });
+
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      navLinks.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // Signup form
+  document.getElementById('signupForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form  = this;
+    const input = form.querySelector('input[type="email"]');
+    const btn   = form.querySelector('button[type="submit"]');
+
+    const prev = form.parentNode.querySelector('.form-error');
+    if (prev) prev.remove();
+
+    const email = input.value.trim();
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!email || !valid) {
+      const err = document.createElement('p');
+      err.className = 'form-error';
+      err.id = 'emailError';
+      err.setAttribute('role', 'alert');
+      err.textContent = email ? 'That doesn’t look like a valid email address.' : 'Enter your work email to continue.';
+      form.insertAdjacentElement('afterend', err);
+      input.setAttribute('aria-invalid', 'true');
+      input.setAttribute('aria-describedby', 'emailError');
+      input.focus();
+      return;
+    }
+
+    input.removeAttribute('aria-invalid');
+    input.removeAttribute('aria-describedby');
+
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    form.style.opacity = '0.7';
+    form.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+      const err2 = document.querySelector('.form-error');
+      if (err2) err2.remove();
+      form.outerHTML = '<div class="form-success" role="status" aria-live="polite">'
+        + '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 9 7 13 15 5"/></svg>'
+        + '<span>Check your inbox. We’ll be there shortly.</span></div>';
+    }, 750);
+  });
+
+  // Scroll reveals
+  (() => {
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  })();
+
+
+</script>
+
+</body>
+</html>
